@@ -40,9 +40,8 @@ void WINAPI TlsCallback(PVOID arg_module, DWORD arg_reason, PVOID arg_context)
 
 __declspec(allocate(".CRT$XLB")) PIMAGE_TLS_CALLBACK CallbackAddress[] = { TlsCallback,NULL }; 
 
-int main()
+int main(int argc, char* argv[])
 {
-	getchar();
-
+	std::printf("TLS callback check!");
 	return 0;
 }
