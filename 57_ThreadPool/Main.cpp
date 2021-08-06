@@ -1,26 +1,26 @@
-#include <Windows.h>
+#include <windows.h>
+#include <process.h>
 #include <iostream>
 
-using namespace std;
+PTP_WORK g_WorkItem = NULL;
+
+VOID NTAPI WorkerOne(PTP_CALLBACK_INSTANCE arg_instance, PVOID arg_context)
+{
+	std::cout << "Thread ID: " << GetCurrentThreadId() << std::endl;
+}
+
+VOID NTAPI WorkerTwo(PTP_CALLBACK_INSTANCE arg_instance, PVOID arg_context)
+{
+	Sleep(500);
+	std::cout << "Thread ID: " << GetCurrentThreadId() << std::endl;
+}
 
 int main(int argc, char* argv[])
 {
-	double save_result = 0;
-	HMODULE dll_load = LoadLibraryExW(L"Milad.dll", nullptr, 0);
-	if (!dll_load)
-	{
-		cout << "We could not load the dynamic library" << endl;
-		return EXIT_FAILURE;
-	}
-	using GetAddingType = double (WINAPI*)(double, double);
-	GetAddingType DllLoadAdd = reinterpret_cast<GetAddingType>(GetProcAddress(dll_load, "?MPrint@Functions@@SANNN@Z"));
-	if (DllLoadAdd) {
-		cout << "We could not locate the function." << endl;
-		return EXIT_FAILURE;
-	}
-	save_result = DllLoadAdd(22, 22);
-	cout << "Function Returned: " << save_result << endl;
+	TrySubmitThreadpoolCallback(WorkerOne, NULL, NULL);
+	TrySubmitThreadpoolCallback(WorkerTwo, NULL, NULL);
 
-	FreeLibrary(dll_load);
-	return EXIT_SUCCESS;
+	WaitForThreadpoolWorkCallbacks(g_WorkItem, FALSE);
+
+	return 0;
 }
